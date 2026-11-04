@@ -53,7 +53,6 @@ curl "https://registry.modelcontextprotocol.io/v0/servers?search=io.github.Clean
 For a new version, bump `version` in `pyproject.toml`, `src/samgov_mcp/__init__.py` and both places in `server.json`, upload to PyPI, then publish again.
 The GitHub MCP Registry (github.com/mcp) reads from the Official Registry but adds servers by manual curation, so listing there is optional and a separate step.
 
-Note: an existing listing, `io.github.pipeworx-io/samgov`, covers SAM.gov opportunities and entity data. What sets ours apart: no SAM.gov API key, set-aside/NAICS/PSC prefix filters, award winners, and lookup by solicitation number.
 
 ---
 
@@ -122,7 +121,6 @@ As of 2026-11-04 there are two routes:
   Category: Search / Data
   Install (Claude Code): claude mcp add samgov --env APIFY_TOKEN=apify_api_... -- uvx samgov-opportunities-mcp
   ```
-mcp.so builds the page from the README: the first paragraph, the `## Tools` table and the first `claude mcp add` block. The README already starts that way.
 
 ---
 
