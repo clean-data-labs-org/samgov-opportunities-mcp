@@ -1,0 +1,45 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.CleanDataLabs/samgov-opportunities",
+  "title": "SAM.gov Opportunities",
+  "description": "Search SAM.gov federal contract opportunities by NAICS, PSC, set-aside, agency, state and date.",
+  "repository": {
+    "url": "https://github.com/CleanDataLabs/samgov-opportunities-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://apify.com/cleandatalabs/samgov-opportunities",
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "samgov-opportunities-mcp",
+      "version": "0.1.0",
+      "runtimeHint": "uvx",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "APIFY_TOKEN",
+          "description": "Your Apify API token (console.apify.com > Settings > API & Integrations). Runs are billed to this account at $0.003 per notice.",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "SAMGOV_MAX_CHARGE_USD",
+          "description": "Spending cap per tool call in USD (default 0.30).",
+          "isRequired": false,
+          "format": "string",
+          "default": "0.30"
+        },
+        {
+          "name": "SAMGOV_ACTOR_BUILD",
+          "description": "Actor build tag to run (default latest).",
+          "isRequired": false,
+          "format": "string",
+          "default": "latest"
+        }
+      ]
+    }
+  ]
+}

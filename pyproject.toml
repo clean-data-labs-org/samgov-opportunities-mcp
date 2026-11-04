@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "samgov-opportunities-mcp"
+version = "0.1.0"
+description = "MCP server for SAM.gov federal contract opportunities: search by NAICS, PSC, set-aside, agency, state and date."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "Clean Data Labs" }]
+keywords = ["mcp", "model-context-protocol", "sam.gov", "government-contracts", "federal-contracts", "govcon", "apify"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "Topic :: Office/Business",
+  "Intended Audience :: Developers",
+]
+dependencies = ["mcp>=2.0,<3", "httpx>=0.27", "pydantic>=2.7"]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[project.urls]
+Homepage = "https://github.com/CleanDataLabs/samgov-opportunities-mcp"
+Repository = "https://github.com/CleanDataLabs/samgov-opportunities-mcp"
+"Apify actor" = "https://apify.com/cleandatalabs/samgov-opportunities"
+
+[project.scripts]
+samgov-opportunities-mcp = "samgov_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/samgov_mcp"]
