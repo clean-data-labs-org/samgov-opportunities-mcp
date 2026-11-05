@@ -1,6 +1,6 @@
 # SAM.gov Opportunities MCP server
 
-<!-- mcp-name: io.github.CleanDataLabs/samgov-opportunities -->
+<!-- mcp-name: io.github.clean-data-labs-org/samgov-opportunities -->
 
 This MCP server lets an AI assistant (Claude Desktop, Cursor, VS Code, Claude Code or any other MCP client) search U.S. federal contract opportunities on SAM.gov: solicitations, sources sought, presolicitations and award notices.
 
@@ -60,7 +60,7 @@ claude mcp add samgov --env APIFY_TOKEN=apify_api_... -- uvx samgov-opportunitie
 ### From source
 
 ```bash
-git clone https://github.com/CleanDataLabs/samgov-opportunities-mcp && cd samgov-opportunities-mcp
+git clone https://github.com/clean-data-labs-org/samgov-opportunities-mcp && cd samgov-opportunities-mcp
 pip install -e .
 APIFY_TOKEN=apify_api_... samgov-opportunities-mcp   # speaks MCP over stdio
 ```

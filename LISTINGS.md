@@ -5,22 +5,20 @@ Drafted 2026-11-04 (MST). Requirements were checked on that date.
 
 ## 0. Prerequisites (in this order)
 
-1. **Pick the GitHub owner.** These files assume the GitHub org **`CleanDataLabs`** (it exists, was created 2026-08-25 and has 0 public repos; confirm it's yours).
-   If you publish under another account, replace `CleanDataLabs` in `server.json` (`name`, `repository.url`), `README.md` (the `mcp-name` comment, clone URL) and `pyproject.toml` (`[project.urls]`).
-   The registry name must stay `io.github.<GitHubLogin>/...`, and the `mcp-name:` line in README.md must match `server.json` `name` exactly.
-2. **Create the public repo** `CleanDataLabs/samgov-opportunities-mcp` and push this folder. `.venv/`, `dist/` and caches are git-ignored. A local git repo with one commit is ready:
+1. **GitHub owner is set.** Files use org **`clean-data-labs-org`** (owned by GitHub user `clean-data-labs`). Registry namespace is `io.github.clean-data-labs-org/...`. The `mcp-name:` line in README.md must match `server.json` `name` exactly.
+2. **Create the public repo** `clean-data-labs-org/samgov-opportunities-mcp` and push this folder. `.venv/`, `dist/` and caches are git-ignored.
    ```bash
    cd /workspace/apify/samgov-mcp
-   git remote add origin git@github.com:CleanDataLabs/samgov-opportunities-mcp.git
+   git remote add origin git@github.com:clean-data-labs-org/samgov-opportunities-mcp.git
    git push -u origin main
    ```
-3. **Set your GitHub username** in `glama.json` (`"maintainers": ["<your-github-username>"]`). Glama needs this for org-owned repos.
+3. **`glama.json` maintainers** is already `["clean-data-labs"]` (required for org-owned repos).
 4. **Publish to PyPI** (the name `samgov-opportunities-mcp` was free on 2026-11-04):
    ```bash
    python -m build && twine upload dist/*     # needs a PyPI account + API token
    ```
    Then check that `uvx samgov-opportunities-mcp` starts. The README goes into the PyPI description and carries the
-   `mcp-name: io.github.CleanDataLabs/samgov-opportunities` line that the Official Registry uses to verify you own the package.
+   `mcp-name: io.github.clean-data-labs-org/samgov-opportunities` line that the Official Registry uses to verify you own the package.
 5. *(Recommended, not required)* Promote actor 0.3 to `latest`. Until then, `get_opportunity` returns a clear error unless the user sets `SAMGOV_ACTOR_BUILD=beta`. `search_opportunities` already works on 0.2.2 (tested).
 
 ---
@@ -33,11 +31,11 @@ Drafted 2026-11-04 (MST). Requirements were checked on that date.
 
 | Field | Value |
 |---|---|
-| name | `io.github.CleanDataLabs/samgov-opportunities` |
+| name | `io.github.clean-data-labs-org/samgov-opportunities` |
 | title | `SAM.gov Opportunities` |
 | description | `Search SAM.gov federal contract opportunities by NAICS, PSC, set-aside, agency, state and date.` |
 | version | `0.1.0` |
-| repository | `https://github.com/CleanDataLabs/samgov-opportunities-mcp` (github) |
+| repository | `https://github.com/clean-data-labs-org/samgov-opportunities-mcp` (github) |
 | websiteUrl | `https://apify.com/cleandatalabs/samgov-opportunities` |
 | package | pypi `samgov-opportunities-mcp` 0.1.0, runtimeHint `uvx`, transport stdio |
 | env vars | `APIFY_TOKEN` (required, secret), `SAMGOV_MAX_CHARGE_USD` (optional, default 0.30), `SAMGOV_ACTOR_BUILD` (optional, default latest) |
@@ -46,9 +44,9 @@ Drafted 2026-11-04 (MST). Requirements were checked on that date.
 ```bash
 # install the publisher CLI (macOS/Linux)
 curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
-./mcp-publisher login github        # device-code login as the GitHub account/org member that owns CleanDataLabs
+./mcp-publisher login github        # device-code login as the GitHub account/org member that owns clean-data-labs-org
 ./mcp-publisher publish             # run in this folder; reads server.json
-curl "https://registry.modelcontextprotocol.io/v0/servers?search=io.github.CleanDataLabs/samgov-opportunities"
+curl "https://registry.modelcontextprotocol.io/v0/servers?search=io.github.clean-data-labs-org/samgov-opportunities"
 ```
 For a new version, bump `version` in `pyproject.toml`, `src/samgov_mcp/__init__.py` and both places in `server.json`, upload to PyPI, then publish again.
 The GitHub MCP Registry (github.com/mcp) reads from the Official Registry but adds servers by manual curation, so listing there is optional and a separate step.
@@ -60,9 +58,9 @@ The GitHub MCP Registry (github.com/mcp) reads from the Official Registry but ad
 
 - **Cost**: free. **Requirements**: a public GitHub repo; `glama.json` with your GitHub username (needed to claim an org repo); a build that starts and answers `initialize` + `tools/list` without credentials (verified locally: the server starts and lists both tools with no token).
 - **Steps**
-  1. Sign in to glama.ai with GitHub, then **Add Server** and enter `https://github.com/CleanDataLabs/samgov-opportunities-mcp`. Glama may also find it automatically through the Official Registry.
+  1. Sign in to glama.ai with GitHub, then **Add Server** and enter `https://github.com/clean-data-labs-org/samgov-opportunities-mcp`. Glama may also find it automatically through the Official Registry.
   2. On the server page, open **Score**, then **Claim ownership** (Glama reads `glama.json`).
-  3. Go to `https://glama.ai/mcp/servers/CleanDataLabs/samgov-opportunities-mcp/admin/dockerfile` and fill in the form:
+  3. Go to `https://glama.ai/mcp/servers/clean-data-labs-org/samgov-opportunities-mcp/admin/dockerfile` and fill in the form:
 
 | Field | Value |
 |---|---|
@@ -99,7 +97,7 @@ As of 2026-11-04 there are two routes:
 | Field | Value |
 |---|---|
 | Tab | MCP Server |
-| Repository URL* | `https://github.com/CleanDataLabs/samgov-opportunities-mcp` |
+| Repository URL* | `https://github.com/clean-data-labs-org/samgov-opportunities-mcp` |
 | Name | `SAM.gov Opportunities` |
 
 **B. A free GitHub issue on `chatmcp/mcpso`.** It's community-reviewed, has no stated turnaround, and the repo has thousands of open issues. Draft:
@@ -108,7 +106,7 @@ As of 2026-11-04 there are two routes:
 - **Body**:
   ```
   Name: SAM.gov Opportunities
-  Repository: https://github.com/CleanDataLabs/samgov-opportunities-mcp
+  Repository: https://github.com/clean-data-labs-org/samgov-opportunities-mcp
   Package: uvx samgov-opportunities-mcp (PyPI)
 
   Description: Search U.S. federal contract opportunities from SAM.gov from any MCP client. Two read-only tools:
@@ -130,7 +128,7 @@ As of 2026-11-04 there are two routes:
 
 ## Checklist for Alex
 
-- [ ] Confirm or replace the GitHub owner `CleanDataLabs`; put your username in `glama.json`
+- [ ] Confirm GitHub org `clean-data-labs-org` / user `clean-data-labs` (glama.json already set)
 - [ ] Create the public GitHub repo and push
 - [ ] Upload to PyPI (`twine upload dist/*`)
 - [ ] `mcp-publisher login github` then `mcp-publisher publish`
