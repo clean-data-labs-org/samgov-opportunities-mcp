@@ -1,6 +1,6 @@
 """SAM.gov Opportunities MCP server.
 
-Two tools, search_opportunities and get_opportunity. Each one runs the Apify actor
+Three tools: search_opportunities, get_opportunity and what_changed_since_last_check (monitor mode). Each one runs the Apify actor
 cleandatalabs/samgov-opportunities with the user's own APIFY_TOKEN and returns the rows.
 Cost: the actor charges $0.003 per returned notice to the token owner's Apify account,
 and every call is capped with maxTotalChargeUsd.
@@ -41,14 +41,18 @@ COMPACT_FIELDS = [
     "posted_date", "modified_date", "response_deadline", "days_until_deadline", "is_active", "naics", "psc_code",
     "set_aside", "set_aside_description", "pop_city", "pop_state", "primary_contact_name", "primary_contact_email",
     "primary_contact_phone", "attachment_count", "award_amount_usd", "award_date", "awardee_name", "awardee_uei",
-    "duplicate_of", "url",
+    "award_number", "awardee_cage_code", "response_timezone", "duplicate_of",
+    "change_type", "changed_fields", "previous_response_deadline", "previous_notice_id", "previous_notice_type_code",
+    "previous_award_amount_usd", "first_seen_at", "url",
 ]
+MIN_MONITOR_VERSION = (0, 3, 4)
 
 INSTRUCTIONS = (
     "Search U.S. federal contract opportunities from SAM.gov: solicitations, sources sought, presolicitations and award notices. "
     "Use search_opportunities with filters (NAICS, PSC, set-aside, agency, state, posted since, deadline). Use get_opportunity "
     "for one notice by notice ID, SAM.gov URL or solicitation number. Each returned notice costs $0.003 on the user's Apify account, "
-    "so keep max_results small unless the user asks for more."
+    "so keep max_results small unless the user asks for more. Use what_changed_since_last_check with a stable monitor_id to get only "
+    "notices that are new or changed (amended, deadline_changed, amount_changed, awarded, canceled, ...) since the previous call."
 )
 
 mcp = MCPServer(name="samgov-opportunities", title="SAM.gov Opportunities", version=__version__, instructions=INSTRUCTIONS,
@@ -100,9 +104,12 @@ async def _run_actor(actor_input: dict, max_rows: int) -> list[dict]:
     cap = round(min(_max_charge(), max(1, max_rows) * PRICE_PER_ROW + 0.0005), 4)
     params = {"build": _build(), "maxTotalChargeUsd": cap, "timeout": 290, "clean": "true", "format": "json"}
     async with httpx.AsyncClient(headers={"Authorization": f"Bearer {_token()}"}, timeout=httpx.Timeout(310.0)) as client:
-        if "lookupIds" in actor_input and _ver_tuple(await _actor_version(client)) < (0, 3):
-            raise ToolError("get_opportunity needs actor version 0.3 or newer. Set SAMGOV_ACTOR_BUILD=beta in this server's env "
-                            "until 0.3 is the actor's latest build.")
+        if "lookupIds" in actor_input or actor_input.get("monitorMode"):
+            v = await _actor_version(client)
+            need = MIN_MONITOR_VERSION if actor_input.get("monitorMode") else (0, 3)
+            if v is not None and _ver_tuple(v) < need:
+                raise ToolError(f"This tool needs actor build {'.'.join(map(str, need))} or newer, but SAMGOV_ACTOR_BUILD="
+                                f"{_build()!r} is {v}. Unset SAMGOV_ACTOR_BUILD (default 'latest') or set it to 'latest'.")
         try:
             r = await client.post(f"{API}/acts/{ACTOR}/run-sync-get-dataset-items", params=params, json=actor_input)
         except httpx.TimeoutException:
@@ -200,6 +207,46 @@ async def get_opportunity(
     if not rows:
         return {"count": 0, "opportunities": [], "note": f"No SAM.gov notice found for {ident!r}."}
     return {"count": len(rows), "estimated_cost_usd": round(len(rows) * PRICE_PER_ROW, 3), "opportunities": _shape(rows, detail)}
+
+
+@mcp.tool(annotations=ToolAnnotations(read_only_hint=False, open_world_hint=True, idempotent_hint=False, destructive_hint=False))
+async def what_changed_since_last_check(
+    monitor_id: Annotated[str, Field(min_length=1, max_length=60, pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$",
+                                      description="Stable name for this watch, e.g. 'construction-co'. Reuse the same id every call; "
+                                                  "the actor remembers what it saw under this id in your Apify account.")],
+    keywords: Annotated[str | None, Field(description="Words to search in title and description.")] = None,
+    naics_codes: Annotated[list[str] | None, Field(description="NAICS codes or prefixes, e.g. ['236220'] or ['5415'].")] = None,
+    psc_codes: Annotated[list[str] | None, Field(description="Product/Service codes or prefixes.")] = None,
+    set_asides: Annotated[list[str] | None, Field(description="Set-aside codes, e.g. SBA, 8A, HZC, SDVOSBC, WOSB, NONE.")] = None,
+    agencies: Annotated[list[str] | None, Field(description="Agency or department names.")] = None,
+    states: Annotated[list[str] | None, Field(description="Two-letter place-of-performance states.")] = None,
+    first_run: Annotated[Literal["emit", "baseline"], Field(description="On the very first call for a monitor_id: 'emit' returns current "
+                                                                         "matches from the last 7 days, 'baseline' only remembers them (free).")] = "baseline",
+    max_results: Annotated[int, Field(ge=1, le=HARD_MAX_RESULTS, description="Maximum changed notices to return. Each costs $0.003; unchanged notices are free.")] = 50,
+    detail: Annotated[Literal["compact", "full"], Field(description="'compact' or 'full'.")] = "compact",
+) -> dict[str, Any]:
+    """What changed since the last check: runs the actor in monitor mode under monitor_id and returns only notices that are
+    new or changed since the previous call with the same id, each with change_type (new, amended, deadline_changed,
+    amount_changed, awarded, canceled, notice_type_changed, updated), changed_fields and the previous values
+    (previous_response_deadline, previous_award_amount_usd, previous_notice_id). Keep the filters the same between calls."""
+    inp: dict[str, Any] = {
+        "monitorMode": True, "monitorId": monitor_id.strip(), "monitorFirstRun": first_run,
+        "keywords": (keywords or "").strip(),
+        "naicsCodes": _clean_list(naics_codes), "pscCodes": _clean_list(psc_codes),
+        "setAsides": [s.upper() if s.upper() in SET_ASIDES else s for s in _clean_list(set_asides)],
+        "agencies": _clean_list(agencies), "states": [s.upper() for s in _clean_list(states)],
+        "updatedWithinDays": 7, "maxResults": int(max_results),
+        "includeDetails": True, "includeContacts": True, "includeAttachments": detail == "full",
+    }
+    inp = {k: v for k, v in inp.items() if v not in ("", [])}
+    rows = (await _run_actor(inp, int(max_results)))[: int(max_results)]
+    counts: dict[str, int] = {}
+    for r in rows:
+        counts[r.get("change_type") or "unknown"] = counts.get(r.get("change_type") or "unknown", 0) + 1
+    return {"monitor_id": inp["monitorId"], "count": len(rows), "changes": counts, "has_changes": bool(rows),
+            "estimated_cost_usd": round(len(rows) * PRICE_PER_ROW, 3),
+            "note": None if rows else "Nothing new or changed since the last check (or first baseline call).",
+            "opportunities": _shape(rows, detail)}
 
 
 def main() -> None:

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "samgov-opportunities-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "MCP server for SAM.gov federal contract opportunities: search by NAICS, PSC, set-aside, agency, state and date."
 readme = "README.md"
 license = "MIT"

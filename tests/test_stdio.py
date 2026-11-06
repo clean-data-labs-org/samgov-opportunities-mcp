@@ -37,11 +37,12 @@ async def test_lists_tools():
     async def fn(s):
         return (await s.list_tools()).tools
     tools = {t.name: t for t in await _session({}, fn)}
-    assert set(tools) == {"search_opportunities", "get_opportunity"}
+    assert set(tools) == {"search_opportunities", "get_opportunity", "what_changed_since_last_check"}
     props = tools["search_opportunities"].input_schema["properties"]
     for k in ("naics_codes", "set_asides", "agencies", "states", "posted_since", "max_results"):
         assert k in props
     assert tools["get_opportunity"].annotations.read_only_hint
+    assert "monitor_id" in tools["what_changed_since_last_check"].input_schema["properties"]
 
 
 @pytest.mark.asyncio

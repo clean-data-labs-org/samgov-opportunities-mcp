@@ -12,10 +12,11 @@ Each call runs the Apify actor [cleandatalabs/samgov-opportunities](https://apif
 |---|---|
 | `search_opportunities` | Searches active notices, newest first. Filters: `keywords`, `naics_codes`, `psc_codes` (both accept prefixes, e.g. `2362` or `Z2`), `set_asides` (SBA, 8A, HZC, SDVOSBC, WOSB, EDWOSB and others), `agencies` (by name), `states` (place of performance), `notice_types`, `posted_since` (YYYY-MM-DD, posted or updated on or after that date; default is the last 7 days), `deadline_within_days`, `open_for_response_only`, `max_results` (default 25, max 200) and `detail` (`compact` or `full`). |
 | `get_opportunity` | Fetches one notice by notice ID, `sam.gov/opp/...` URL or solicitation number. A solicitation number returns all of its notices, including the award (winner, UEI, amount). |
+| `what_changed_since_last_check` | Monitor mode: give a stable `monitor_id` plus the same filters each time and get only notices that are new or changed since the previous call, each with `change_type` (`new`, `amended`, `deadline_changed`, `amount_changed`, `awarded`, `canceled`, `notice_type_changed`, `updated`), `changed_fields` and previous values (`previous_response_deadline`, `previous_award_amount_usd`, `previous_notice_id`). Unchanged notices are free. The first call defaults to a free baseline. |
 
-Compact rows include the notice ID, title, solicitation number, type, department, agency and office, posted and deadline dates, NAICS, PSC, set-aside, place of performance, primary contact, attachment count, award fields and the SAM.gov link. `detail: "full"` adds the description, all contacts and attachment links.
+Compact rows include the notice ID, title, solicitation number, type, department, agency and office, posted and deadline dates, NAICS, PSC, set-aside, place of performance, primary contact, attachment count, award fields (amount, date, awardee name, UEI, CAGE, award number), monitor change fields and the SAM.gov link. `detail: "full"` adds the description, all contacts and attachment links.
 
-Both tools are read-only.
+`search_opportunities` and `get_opportunity` are read-only. `what_changed_since_last_check` stores its memory (a `samgov-monitor-state` key-value record) in your own Apify account.
 
 ## Cost
 
@@ -71,13 +72,14 @@ APIFY_TOKEN=apify_api_... samgov-opportunities-mcp   # speaks MCP over stdio
 |---|---|---|
 | `APIFY_TOKEN` | (required) | Your Apify API token. Runs are billed to this account. |
 | `SAMGOV_MAX_CHARGE_USD` | `0.30` | Spending cap per tool call. |
-| `SAMGOV_ACTOR_BUILD` | `latest` | Actor build tag or number to run. `get_opportunity` needs actor 0.3 or newer. |
+| `SAMGOV_ACTOR_BUILD` | `latest` | Actor build tag or number to run. `latest` is actor 0.3.4+ (webhooks, award detail, amount shifts, lookup). `get_opportunity` needs 0.3+, `what_changed_since_last_check` needs 0.3.4+. |
 
 ## Example prompts
 
 - "Find small-business set-aside janitorial contracts in Colorado posted this week."
 - "Any VA construction solicitations under NAICS 2362 due in the next 30 days?"
 - "Who won solicitation FA813226Q0061, and for how much?"
+- "What changed since last check in my construction-co watch (NAICS 236220, Colorado)?"
 - "Show me HUBZone IT services opportunities (NAICS 5415) from the Army since 2026-11-01."
 
 ## No-install alternative: Apify's hosted MCP server
