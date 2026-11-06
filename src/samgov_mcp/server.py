@@ -42,8 +42,9 @@ COMPACT_FIELDS = [
     "set_aside", "set_aside_description", "pop_city", "pop_state", "primary_contact_name", "primary_contact_email",
     "primary_contact_phone", "attachment_count", "award_amount_usd", "award_date", "awardee_name", "awardee_uei",
     "award_number", "awardee_cage_code", "response_timezone", "duplicate_of",
-    "change_type", "changed_fields", "previous_response_deadline", "previous_notice_id", "previous_notice_type_code",
-    "previous_award_amount_usd", "first_seen_at", "url",
+    "change_type", "changed_fields", "change_summary", "text_diff",
+    "previous_response_deadline", "previous_notice_id", "previous_notice_type_code",
+    "previous_award_amount_usd", "first_seen_at", "attachment_archive", "attachments_archived", "url",
 ]
 MIN_MONITOR_VERSION = (0, 3, 4)
 
@@ -52,7 +53,7 @@ INSTRUCTIONS = (
     "Use search_opportunities with filters (NAICS, PSC, set-aside, agency, state, posted since, deadline). Use get_opportunity "
     "for one notice by notice ID, SAM.gov URL or solicitation number. Each returned notice costs $0.003 on the user's Apify account, "
     "so keep max_results small unless the user asks for more. Use what_changed_since_last_check with a stable monitor_id to get only "
-    "notices that are new or changed (amended, deadline_changed, amount_changed, awarded, canceled, ...) since the previous call."
+    "notices that are new or changed (amended, deadline_changed, amount_changed, awarded, canceled, ...) since the previous call, with change_summary and text_diff when the actor returns them."
 )
 
 mcp = MCPServer(name="samgov-opportunities", title="SAM.gov Opportunities", version=__version__, instructions=INSTRUCTIONS,
@@ -227,7 +228,8 @@ async def what_changed_since_last_check(
 ) -> dict[str, Any]:
     """What changed since the last check: runs the actor in monitor mode under monitor_id and returns only notices that are
     new or changed since the previous call with the same id, each with change_type (new, amended, deadline_changed,
-    amount_changed, awarded, canceled, notice_type_changed, updated), changed_fields and the previous values
+    amount_changed, awarded, canceled, notice_type_changed, updated), changed_fields, a plain-English change_summary,
+    structured text_diff (title/description passages/attachments/deadline/amount/etc.) and the previous values
     (previous_response_deadline, previous_award_amount_usd, previous_notice_id). Keep the filters the same between calls."""
     inp: dict[str, Any] = {
         "monitorMode": True, "monitorId": monitor_id.strip(), "monitorFirstRun": first_run,

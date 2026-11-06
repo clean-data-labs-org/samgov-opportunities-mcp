@@ -136,3 +136,12 @@ As of 2026-11-04 there are two routes:
 - [ ] mcp.so: pay $39 on the form, or open the free GitHub issue drafted above
 - [ ] Smithery: nothing (closed)
 - [ ] Optional: promote actor 0.3 to `latest` so `get_opportunity` works without `SAMGOV_ACTOR_BUILD=beta`
+
+---
+
+## Status (2026-11-05 evening MT)
+
+- MCP package bumped to **0.2.1** on GitHub `main` (compact fields: `change_summary`, `text_diff`, `attachment_archive`, `attachments_archived`; README notes actor 0.3.5).
+- **Glama Claim**: still pending their next sync after the maintainer casing fix (`Clean-Data-Labs`). No deployable Glama release until claim succeeds.
+- **PyPI**: still needs Alex's PyPI account/token to publish **0.2.1** (`twine upload`). Do not publish from this box without that.
+- Actor `latest`/`beta` promotion to 0.3.5 is handled separately (not by this MCP repo).
