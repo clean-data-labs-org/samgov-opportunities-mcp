@@ -6,6 +6,8 @@ This MCP server lets an AI assistant (Claude Desktop, Cursor, VS Code, Claude Co
 
 Each call runs the Apify actor [cleandatalabs/samgov-opportunities](https://apify.com/cleandatalabs/samgov-opportunities) under **your own Apify token**. You don't need a SAM.gov API key and there is no 10-requests-per-day limit.
 
+> **Not a developer?** If you'd rather have a person watch a SAM.gov search for you, Clean Data Labs offers a [free hand-checked sample](https://clean-data-labs-org.github.io/?r=gh-mcp-readme): one search, the last 7 days, up to 10 notices.
+
 ## Tools
 
 | Tool | What it does |
