@@ -72,10 +72,10 @@ APIFY_TOKEN=apify_api_... samgov-opportunities-mcp   # speaks MCP over stdio
 |---|---|---|
 | `APIFY_TOKEN` | (required) | Your Apify API token. Runs are billed to this account. |
 | `SAMGOV_MAX_CHARGE_USD` | `0.30` | Spending cap per tool call. |
-| `SAMGOV_ACTOR_BUILD` | `latest` | Actor build tag or number to run. `latest`/`beta` are actor **0.3.5** (monitor `change_summary`/`text_diff`, opt-in `downloadAttachments` → `attachment_archive`). Leave unset so the default `latest` is used. `get_opportunity` needs 0.3+, `what_changed_since_last_check` needs 0.3.4+. |
+| `SAMGOV_ACTOR_BUILD` | `latest` | Actor build tag or number to run. `latest` is actor **0.3.7** (monitor `change_summary`/`text_diff`, opt-in `downloadAttachments` → `attachment_archive`). Leave unset so the default `latest` is used. `get_opportunity` needs 0.3+, `what_changed_since_last_check` needs 0.3.4+. |
 
 
-Actor **0.3.5** (on `latest`/`beta`): monitor rows include `change_summary` and `text_diff`. Attachment archiving is opt-in on the actor via `downloadAttachments: true` (files land in a persistent KV store with sha256 dedupe; rows get `attachment_archive[]` / `attachments_archived`). This MCP package does not yet expose a `download_attachments` tool flag — set it only if you call the actor directly or pin a custom build input. Default `SAMGOV_ACTOR_BUILD=latest` is fine once 0.3.5 is promoted.
+Actor **0.3.7** (on `latest`): monitor rows include `change_summary` and `text_diff`, and every row carries `set_aside` / `set_aside_description`. Attachment archiving is opt-in on the actor via `downloadAttachments: true` (files land in a persistent KV store with sha256 dedupe; rows get `attachment_archive[]` / `attachments_archived`). This MCP package does not yet expose a `download_attachments` tool flag; set it only if you call the actor directly.
 
 ## Example prompts
 
@@ -93,7 +93,7 @@ To skip installing anything, point your client at Apify's hosted server and limi
 { "mcpServers": { "samgov": { "url": "https://mcp.apify.com/?tools=cleandatalabs/samgov-opportunities" } } }
 ```
 
-It signs you in with OAuth, or you can send `Authorization: Bearer <APIFY_TOKEN>`. It exposes the actor as one generic tool with every raw actor input, plus run and dataset helper tools. This package instead offers two focused tools with typed filters, compact output and a per-call spending cap.
+It signs you in with OAuth, or you can send `Authorization: Bearer <APIFY_TOKEN>`. It exposes the actor as one generic tool with every raw actor input, plus run and dataset helper tools. This package instead offers three focused tools with typed filters, compact output and a per-call spending cap.
 
 ## Development
 
